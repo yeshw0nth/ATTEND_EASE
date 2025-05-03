@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AttendEASE - Your Personal Attendance Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Orbitron:wght@400..900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header class="app-header">
+        <h1><span class="highlight">Attend</span>EASE</h1>
+        <p class="tagline">Effortless attendance tracking.</p>
+    </header>
+
+    <main class="app-container">
+
+        <section class="stats-section card">
+            <h2>Your Progress</h2>
+            <div class="percentage-display">
+                <div class="percentage-circle">
+                    <svg viewBox="0 0 36 36" class="circular-chart">
+                        <path class="circle-bg"
+                            d="M18 2.0845
+                               a 15.9155 15.9155 0 0 1 0 31.831
+                               a 15.9155 15.9155 0 0 1 0 -31.831"
+                        />
+                        <path class="circle"
+                            stroke-dasharray="0, 100"
+                            d="M18 2.0845
+                               a 15.9155 15.9155 0 0 1 0 31.831
+                               a 15.9155 15.9155 0 0 1 0 -31.831"
+                        />
+                    </svg>
+                    <span id="percentage" class="percentage-text">--%</span>
+                </div>
+                 <p class="percentage-label">Attendance Percentage</p>
+            </div>
+
+            <div class="counts-display">
+                <div class="count-item">
+                    <span id="attended-count" class="count-number">0</span>
+                    <span class="count-label">Present</span>
+                </div>
+                <div class="count-item">
+                    <span id="absent-count" class="count-number">0</span>
+                    <span class="count-label">Absent</span>
+                </div>
+                 <div class="count-item">
+                    <span id="held-count" class="count-number">0</span>
+                    <span class="count-label">Total Held</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="controls-section card">
+            <h2>Log Class</h2>
+            <div class="button-grid">
+                 <button id="present-btn" class="action-button present-button">
+                    <span class="icon">✅</span> Present
+                 </button>
+                 <button id="absent-btn" class="action-button absent-button">
+                     <span class="icon">❌</span> Absent
+                 </button>
+            </div>
+             <p class="click-feedback" id="click-feedback"></p>
+        </section>
+
+         <section class="guidance-section card">
+            <h2>Smart Insight</h2>
+            <p id="guidance-message" class="guidance-text">
+                Log your first class to see insights!
+            </p>
+        </section>
+
+        <section class="settings-section card">
+            <h2>Settings</h2>
+            <div class="setting-item">
+                <label for="target-percentage">Target Percentage:</label>
+                <div class="input-with-unit">
+                    <input type="number" id="target-percentage" value="75" min="0" max="100" step="1">
+                    <span class="unit">%</span>
+                </div>
+            </div>
+
+            <button id="reset-btn" class="action-button reset-button">
+                <span class="icon">🔄</span> Reset All Data
+            </button>
+        </section>
+
+    </main>
+
+    <footer class="app-footer">
+        <p>© 2023 AttendEASE (Crafted by a Top Developer)</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
