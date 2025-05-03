@@ -1,0 +1,518 @@
+/* Basic Reset & Global Styles */
+:root {
+    --primary-color: #5a67d8; /* Softer Violet */
+    --secondary-color: #48bb78; /* Success Green */
+    --danger-color: #f56565; /* Warning Red */
+    --warning-color: #f6e05e; /* Caution Yellow */
+    --background-color: #f7fafc; /* Very Light Grey Blue */
+    --card-background: #ffffff; /* White */
+    --text-color: #2d3748; /* Dark Grey Blue */
+    --subtle-text-color: #4a5568; /* Medium Grey Blue */
+    --border-color: #e2e8f0; /* Lighter Grey Blue */
+    --focus-outline-color: rgba(90, 103, 216, 0.5); /* Primary color with transparency */
+    --circle-size: 180px; /* Size of the attendance circle */
+     --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--background-color);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 60px; /* Space for footer */
+    overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+/* Header */
+.app-header {
+    background: linear-gradient(135deg, var(--primary-color), #6b46c1); /* Violet gradient */
+    color: white;
+    text-align: center;
+    padding: 2.5rem 1.5rem; /* Increased padding */
+    width: 100%;
+    box-shadow: var(--card-shadow); /* Used card shadow */
+    margin-bottom: 2rem; /* Increased margin */
+    position: relative; /* For potential future background elements */
+    overflow: hidden;
+}
+
+.app-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="80" r="40" fill="%23ffffff10"/><circle cx="80" cy="20" r="30" fill="%23ffffff10"/></svg>'); /* Subtle background pattern */
+    background-size: 150px;
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+
+.app-header h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2.8rem; /* Slightly larger */
+    margin-bottom: 0.5rem;
+    letter-spacing: 2px;
+    position: relative; /* Z-index for text over pattern */
+}
+
+.app-header .highlight {
+    color: var(--warning-color); /* Use warning color for highlight */
+}
+
+.app-header .tagline {
+    font-size: 1rem;
+    opacity: 0.95;
+    position: relative;
+}
+
+/* Main Container */
+.app-container {
+    width: 100%;
+    max-width: 640px; /* Slightly wider */
+    padding: 0 1.5rem; /* Increased padding */
+    display: flex;
+    flex-direction: column;
+    gap: 1.8rem; /* Increased space between sections */
+}
+
+/* Sections (Cards) */
+.card {
+    background-color: var(--card-background);
+    padding: 1.8rem; /* Increased padding */
+    border-radius: 16px; /* More rounded corners */
+    box-shadow: var(--card-shadow);
+    border: 1px solid var(--border-color); /* Subtle border */
+    transition: transform 0.3s ease; /* Add hover/focus effect */
+}
+
+.card:hover {
+     /* transform: translateY(-5px); */ /* Optional subtle lift effect */
+}
+
+section h2 {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.5rem; /* Slightly larger */
+    font-weight: 600;
+    margin-bottom: 1.2rem; /* Increased margin */
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.8rem; /* Increased padding */
+}
+
+/* Stats Section */
+.stats-section {
+    text-align: center;
+}
+
+.percentage-display {
+    margin-bottom: 1.8rem; /* Increased margin */
+}
+
+.percentage-circle {
+    width: var(--circle-size);
+    height: var(--circle-size);
+    position: relative;
+    margin: 0 auto 12px auto; /* Increased margin */
+}
+
+.circular-chart {
+    display: block;
+    margin: 10px auto;
+    max-width: 100%;
+    max-height: 100%;
+    overflow: visible; /* Ensure stroke cap is visible */
+}
+
+.circle-bg {
+    fill: none;
+    stroke: var(--border-color);
+    stroke-width: 3.8; /* Keep thickness */
+}
+
+.circle {
+    fill: none;
+    stroke: var(--secondary-color); /* Default color */
+    stroke-width: 3.8; /* Match background thickness for visibility */
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s ease-in-out, stroke 0.5s ease; /* Animate color change too */
+    transform-origin: 50% 50%;
+    transform: rotate(-90deg);
+}
+
+/* Change circle color based on percentage range (JS will add classes) */
+.circle.below-75 { stroke: var(--danger-color); }
+.circle.near-75 { stroke: var(--warning-color); }
+.circle.above-75 { stroke: var(--secondary-color); }
+
+
+.percentage-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2.6rem; /* Larger percentage text */
+    font-weight: 700; /* Bolder */
+    color: var(--text-color);
+    font-family: 'Orbitron', sans-serif;
+    pointer-events: none; /* Allow clicks to pass through */
+}
+
+.percentage-label {
+    font-size: 1.1rem; /* Slightly larger label */
+    color: var(--subtle-text-color);
+}
+
+.counts-display {
+    display: flex;
+    justify-content: space-around;
+    gap: 1.2rem; /* Increased space between count items */
+    flex-wrap: wrap;
+}
+
+.count-item {
+    flex: 1;
+    min-width: 120px; /* Slightly larger min width */
+    padding: 1rem 0.8rem; /* Increased padding */
+    border: 1px solid var(--border-color);
+    border-radius: 10px; /* More rounded */
+    background-color: var(--background-color); /* Subtle background */
+    text-align: center;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.03); /* Softer inset shadow */
+    transition: transform 0.2s ease; /* Add subtle hover effect */
+}
+
+.count-item:hover {
+     transform: translateY(-3px);
+}
+
+
+.count-item .count-number {
+    display: block;
+    font-size: 2rem; /* Larger count numbers */
+    font-weight: 700; /* Bolder */
+    color: var(--primary-color);
+    font-family: 'Orbitron', sans-serif;
+    margin-bottom: 0.4rem; /* Increased margin */
+}
+
+.count-item .count-label {
+    display: block;
+    font-size: 1rem; /* Slightly larger label */
+    color: var(--subtle-text-color);
+    font-weight: 400;
+}
+
+
+/* Controls Section (Buttons) */
+.button-grid {
+    display: flex;
+    gap: 1.5rem; /* Increased space between buttons */
+    justify-content: stretch; /* Buttons stretch to fill container */
+}
+
+.action-button {
+    flex-grow: 1;
+    padding: 1.2rem 1.8rem; /* Increased padding */
+    font-size: 1.3rem; /* Larger font size */
+    font-weight: 600;
+    border: none;
+    border-radius: 10px; /* More rounded */
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.15s ease, box-shadow 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem; /* Increased space between icon and text */
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1); /* Softer shadow */
+    min-width: 120px; /* Ensure minimum size */
+}
+
+.action-button .icon {
+    font-size: 1.8rem; /* Larger icons */
+}
+
+.present-button {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+.present-button:hover {
+    background-color: #38a169; /* Darker green */
+    box-shadow: 0 6px 12px rgba(72, 187, 120, 0.25); /* Shadow related to color */
+}
+
+.absent-button {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+.absent-button:hover {
+    background-color: #e53e3e; /* Darker red */
+    box-shadow: 0 6px 12px rgba(245, 101, 101, 0.25); /* Shadow related to color */
+}
+
+.reset-button {
+     background-color: #e2e8f0; /* Light grey background */
+    color: var(--subtle-text-color); /* Darker text */
+    box-shadow: none; /* No shadow for reset */
+    font-size: 1rem;
+    padding: 0.8rem 1.2rem;
+    margin-top: 1.5rem; /* Increased space */
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    border: 1px solid var(--border-color); /* Add border */
+    font-weight: 400;
+    border-radius: 8px; /* Slightly less rounded */
+}
+
+.reset-button:hover {
+    background-color: #d6e4f2; /* Slightly darker grey */
+    border-color: #cbd5e0;
+}
+
+
+.action-button:active {
+    transform: scale(0.97); /* Softer press animation */
+}
+
+/* Animation for button click feedback */
+@keyframes button-pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); } /* Less intense pulse */
+    100% { transform: scale(1); }
+}
+
+.action-button.clicked {
+    animation: button-pulse 0.3s ease;
+}
+
+
+/* Click Feedback Message */
+.click-feedback {
+    text-align: center;
+    margin-top: 1.2rem; /* Increased margin */
+    font-size: 1rem; /* Slightly larger */
+    color: var(--subtle-text-color);
+    min-height: 1.5em; /* Reserve space */
+    opacity: 0;
+    transition: opacity 0.4s ease; /* Softer fade */
+}
+
+.click-feedback.show {
+    opacity: 1;
+}
+
+
+/* Guidance Section */
+.guidance-section {
+    background-color: #ebf4ff; /* Very light blue background */
+    border: 1px solid #bee3f8; /* Light blue border */
+    text-align: center;
+    padding: 1.5rem; /* Slightly less padding */
+}
+
+.guidance-section h2 {
+    color: #3182ce; /* Blue heading */
+    border-bottom-color: #bee3f8;
+}
+
+.guidance-text {
+    font-size: 1.15rem; /* Slightly larger */
+    color: var(--text-color);
+    line-height: 1.7;
+}
+
+.guidance-text strong {
+    color: var(--primary-color); /* Highlight important numbers */
+    font-weight: 700;
+}
+
+/* Settings Section */
+.settings-section {
+     /* Default card styles */
+}
+
+.setting-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem; /* Space below setting item */
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.setting-item label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-right: 1rem; /* Space between label and input */
+}
+
+.input-with-unit {
+    display: flex;
+    align-items: center;
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.input-with-unit input[type="number"] {
+    padding: 0.6rem 0.8rem;
+    font-size: 1.1rem;
+    border: none;
+    outline: none; /* Remove default outline */
+    background: transparent;
+    color: var(--text-color);
+    width: 80px; /* Fixed width for number input */
+    -moz-appearance: textfield; /* Remove default number arrows in Firefox */
+}
+
+.input-with-unit input[type="number"]::-webkit-outer-spin-button,
+.input-with-unit input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none; /* Remove default number arrows in Chrome/Safari */
+    margin: 0;
+}
+
+.input-with-unit .unit {
+    padding: 0.6rem 0.8rem;
+    font-size: 1.1rem;
+    background-color: #edf2f7; /* Slightly darker background for unit */
+    color: var(--subtle-text-color);
+    font-weight: 600;
+    pointer-events: none; /* Cannot select unit text */
+}
+
+input[type="number"]:focus-visible {
+     outline: 2px solid var(--focus-outline-color); /* Custom focus outline */
+    outline-offset: 2px;
+}
+
+/* Footer */
+.app-footer {
+    margin-top: 3rem; /* Increased margin */
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--subtle-text-color);
+    width: 100%;
+    padding: 0 1rem;
+}
+
+
+/* Animations for number updates (JS will add class 'animate-change') */
+.count-number.animate-change {
+    animation: number-flash 0.6s ease; /* Slightly longer animation */
+}
+
+@keyframes number-flash {
+    0% { color: var(--primary-color); transform: scale(1); }
+    50% { color: var(--warning-color); transform: scale(1.05); } /* Temporarily change color and size */
+    100% { color: var(--primary-color); transform: scale(1); }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 480px) {
+    .app-header h1 {
+        font-size: 2.2rem;
+    }
+
+    .app-header .tagline {
+        font-size: 0.9rem;
+    }
+
+    .app-container {
+        padding: 0 1rem;
+        gap: 1.5rem;
+    }
+
+    .card {
+        padding: 1.2rem;
+    }
+
+     section h2 {
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.6rem;
+     }
+
+
+    .action-button {
+        font-size: 1.1rem;
+        padding: 1rem 1.2rem;
+        gap: 0.6rem;
+    }
+
+    .action-button .icon {
+        font-size: 1.5rem;
+    }
+
+    .count-item {
+        flex-basis: 48%; /* Adjust slightly for small screens */
+        min-width: unset; /* Remove minimum width */
+        padding: 0.8rem 0.5rem;
+    }
+
+     .count-item .count-number {
+        font-size: 1.6rem;
+        margin-bottom: 0.2rem;
+     }
+
+     .count-item .count-label {
+         font-size: 0.9rem;
+     }
+
+
+    .percentage-text {
+        font-size: 2.2rem;
+    }
+
+     :root {
+        --circle-size: 150px; /* Slightly smaller circle on small screens */
+     }
+
+     .button-grid {
+        flex-direction: column; /* Stack buttons vertically */
+        gap: 1rem;
+     }
+     .action-button {
+         max-width: none; /* Allow buttons to take full width */
+     }
+
+     .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.8rem;
+     }
+
+     .setting-item label {
+        margin-right: 0;
+        margin-bottom: 0.4rem;
+        font-size: 1rem;
+     }
+
+     .input-with-unit input[type="number"] {
+         width: 60px;
+         font-size: 1rem;
+         padding: 0.5rem 0.6rem;
+     }
+      .input-with-unit .unit {
+         font-size: 1rem;
+         padding: 0.5rem 0.6rem;
+      }
+
+
+}
