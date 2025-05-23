@@ -236,17 +236,20 @@ targetPercentageInput.addEventListener('input', (event) => {
 
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
-    loadState(); // Load data when the page loads
-    updateDisplay(); // Update UI with loaded data
+    loadState();
+    updateDisplay();
 
-    // --- Mobile Action Bar Logic (DOM Ready) ---
-    const mobilePresentBtn = document.getElementById('mobile-present-btn');
-    const mobileAbsentBtn = document.getElementById('mobile-absent-btn');
-    const miniProgressText = document.getElementById('mini-progress-text');
-    const miniProgressBar = document.querySelector('.mini-progress-bar');
-    let lastAction = null; // For undo
-    let undoTimeout = null;
-    let actionLock = false; // Prevent rapid double-tap
+    function getMobileElements() {
+        return {
+            mobilePresentBtn: document.getElementById('mobile-present-btn'),
+            mobileAbsentBtn: document.getElementById('mobile-absent-btn'),
+            miniProgressText: document.getElementById('mini-progress-text'),
+            miniProgressBar: document.querySelector('.mini-progress-bar'),
+        };
+    }
+
+    let lastAction = null;
+    let actionLock = false;
 
     function vibrate(ms = 30) {
         if (window.navigator && window.navigator.vibrate) {
@@ -254,20 +257,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function highlightMiniProgress() {
+    function highlightMiniProgress(miniProgressBar) {
         if (!miniProgressBar) return;
         miniProgressBar.classList.add('highlight-mini');
         setTimeout(() => miniProgressBar.classList.remove('highlight-mini'), 350);
     }
 
     function showUndoToast(type) {
-        // type: 'present' or 'absent'
         const undoMsg = type === 'present' ? '✅ Marked Present!' : '❌ Marked Absent!';
         showToast(
             `${undoMsg} <button class="undo-btn" id="undo-btn" aria-label="Undo last action">Undo</button>`,
             3500
         );
-        // Attach undo handler
         setTimeout(() => {
             const undoBtn = document.getElementById('undo-btn');
             if (undoBtn) {
@@ -285,20 +286,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateMiniProgress(percentage) {
+        const { miniProgressText, miniProgressBar } = getMobileElements();
         if (!miniProgressText || !miniProgressBar) return;
         const pct = isNaN(percentage) ? 0 : Math.max(0, Math.min(100, percentage));
         miniProgressText.textContent = `${pct.toFixed(1)}%`;
-        // Animate the circle (SVG stroke)
         const dash = 100;
         const offset = dash - (dash * pct) / 100;
         miniProgressBar.setAttribute('stroke-dasharray', dash);
         miniProgressBar.setAttribute('stroke-dashoffset', offset);
-        // Color logic (match main bar)
         let color = '#48bb78';
         if (pct < 60) color = '#f56565';
         else if (pct < 75) color = '#f6e05e';
         miniProgressBar.style.stroke = color;
-        highlightMiniProgress();
+        highlightMiniProgress(miniProgressBar);
     }
 
     function syncMiniProgress() {
@@ -308,9 +308,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleMobileAction(type) {
+        const { mobilePresentBtn, mobileAbsentBtn } = getMobileElements();
         if (actionLock) return;
         actionLock = true;
-        setTimeout(() => { actionLock = false; }, 500); // Prevent rapid double-tap
+        setTimeout(() => { actionLock = false; }, 500);
         if (type === 'present') {
             attended++;
             lastAction = 'present';
@@ -325,16 +326,30 @@ document.addEventListener('DOMContentLoaded', () => {
         showUndoToast(type);
     }
 
-    if (mobilePresentBtn && mobileAbsentBtn) {
-        mobilePresentBtn.addEventListener('click', () => handleMobileAction('present'));
-        mobileAbsentBtn.addEventListener('click', () => handleMobileAction('absent'));
+    function attachMobileListeners() {
+        const { mobilePresentBtn, mobileAbsentBtn } = getMobileElements();
+        if (!mobilePresentBtn || !mobileAbsentBtn) {
+            console.warn('Mobile action bar elements not found.');
+            return;
+        }
+        // Remove previous listeners by cloning
+        const newPresent = mobilePresentBtn.cloneNode(true);
+        const newAbsent = mobileAbsentBtn.cloneNode(true);
+        mobilePresentBtn.parentNode.replaceChild(newPresent, mobilePresentBtn);
+        mobileAbsentBtn.parentNode.replaceChild(newAbsent, mobileAbsentBtn);
+        newPresent.addEventListener('click', () => handleMobileAction('present'));
+        newAbsent.addEventListener('click', () => handleMobileAction('absent'));
     }
+
+    // Attach listeners on load
+    attachMobileListeners();
 
     // Sync mini progress on every display update
     const origUpdateDisplay = updateDisplay;
     updateDisplay = function() {
         origUpdateDisplay.apply(this, arguments);
         syncMiniProgress();
+        attachMobileListeners();
     };
     // Initial sync
     syncMiniProgress();
