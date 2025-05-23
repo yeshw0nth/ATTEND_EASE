@@ -114,6 +114,18 @@
         <!-- Hide original settings-section card -->
         <section class="settings-section card" aria-label="Settings" style="display:none;"></section>
     </main>
+    <!-- Mobile Floating Action Bar (only visible on mobile) -->
+    <div class="mobile-action-bar" id="mobile-action-bar">
+      <div class="mini-progress" id="mini-progress" aria-label="Attendance Percentage">
+        <svg viewBox="0 0 36 36" class="mini-progress-svg">
+          <circle class="mini-progress-bg" cx="18" cy="18" r="16" />
+          <circle class="mini-progress-bar" cx="18" cy="18" r="16" />
+        </svg>
+        <span class="mini-progress-text" id="mini-progress-text">--%</span>
+      </div>
+      <button class="mobile-action-btn present" id="mobile-present-btn" aria-label="Mark Present"><span role="img" aria-label="Present">✅</span></button>
+      <button class="mobile-action-btn absent" id="mobile-absent-btn" aria-label="Mark Absent"><span role="img" aria-label="Absent">➖</span></button>
+    </div>
     <!-- Toast Notification Container -->
     <div id="toast-container" class="toast-container" aria-live="polite"></div>
     <!-- Onboarding Modal -->

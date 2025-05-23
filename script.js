@@ -361,3 +361,57 @@ if (settingsModal) {
     }
   });
 }
+
+// --- Mobile Action Bar Logic ---
+const mobilePresentBtn = document.getElementById('mobile-present-btn');
+const mobileAbsentBtn = document.getElementById('mobile-absent-btn');
+const miniProgressText = document.getElementById('mini-progress-text');
+const miniProgressBar = document.querySelector('.mini-progress-bar');
+
+function updateMiniProgress(percentage) {
+    if (!miniProgressText || !miniProgressBar) return;
+    const pct = isNaN(percentage) ? 0 : Math.max(0, Math.min(100, percentage));
+    miniProgressText.textContent = `${pct.toFixed(1)}%`;
+    // Animate the circle (SVG stroke)
+    const dash = 100;
+    const offset = dash - (dash * pct) / 100;
+    miniProgressBar.setAttribute('stroke-dasharray', dash);
+    miniProgressBar.setAttribute('stroke-dashoffset', offset);
+    // Color logic (match main bar)
+    let color = '#48bb78';
+    if (pct < 60) color = '#f56565';
+    else if (pct < 75) color = '#f6e05e';
+    miniProgressBar.style.stroke = color;
+}
+
+function syncMiniProgress() {
+    const held = attended + absent;
+    const percentage = held === 0 ? 0 : (attended / held) * 100;
+    updateMiniProgress(percentage);
+}
+
+if (mobilePresentBtn && mobileAbsentBtn) {
+    mobilePresentBtn.addEventListener('click', () => {
+        attended++;
+        updateDisplay();
+        syncMiniProgress();
+        addButtonAnimation(mobilePresentBtn);
+        showClickFeedback('✅ Marked Present!');
+    });
+    mobileAbsentBtn.addEventListener('click', () => {
+        absent++;
+        updateDisplay();
+        syncMiniProgress();
+        addButtonAnimation(mobileAbsentBtn);
+        showClickFeedback('❌ Marked Absent!');
+    });
+}
+
+// Sync mini progress on every display update
+const origUpdateDisplay = updateDisplay;
+updateDisplay = function() {
+    origUpdateDisplay.apply(this, arguments);
+    syncMiniProgress();
+};
+// Initial sync
+syncMiniProgress();
