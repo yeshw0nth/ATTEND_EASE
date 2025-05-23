@@ -64,7 +64,6 @@ function updateDisplay() {
     const percentage = held === 0 ? 0 : (attended / held) * 100;
     const targetPercentageDecimal = targetPercentage / 100;
 
-
     // Animate number changes for counts
     animateNumberChange(attendedCountEl, attended);
     animateNumberChange(absentCountEl, absent);
@@ -76,27 +75,41 @@ function updateDisplay() {
     // Update percentage text
     percentageEl.textContent = `${percentage.toFixed(1)}%`; // Show one decimal place
 
-    // Update percentage circle
-    const circumference = 2 * Math.PI * 15.9155; // Circumference of the SVG circle path
-    const percentageOffset = (percentage / 100) * circumference;
-    const strokeDashoffset = circumference - percentageOffset;
-
-    // Explicitly set stroke-dasharray for correct rendering
-    percentageCircle.style.strokeDasharray = circumference;
-
-    // Apply the stroke-dashoffset and trigger the animation
-    percentageCircle.style.transition = 'stroke-dashoffset 1s ease-in-out, stroke 0.5s ease'; // Ensure transition is active
-    percentageCircle.style.strokeDashoffset = strokeDashoffset;
-
-    // Update circle color based on percentage relative to target
-    percentageCircle.classList.remove('below-75', 'near-75', 'above-75'); // Remove old classes
-    if (percentage < targetPercentage) {
-        percentageCircle.classList.add('below-75');
-    } else if (percentage >= targetPercentage && percentage < targetPercentage + 5) {
-         percentageCircle.classList.add('near-75'); // Use 'near-75' for close to target (optional)
+    // --- Progress Bar ---
+    const progressBar = document.getElementById('progress-bar-inner');
+    const progressTarget = document.getElementById('progress-bar-target');
+    const barOuter = document.querySelector('.progress-bar-outer');
+    if (progressBar && barOuter) {
+        progressBar.style.width = `${percentage}%`;
+        // Set color based on percentage
+        let color = '#48bb78'; // green
+        if (percentage < 60) color = '#f56565'; // red
+        else if (percentage < 75) color = '#f6e05e'; // yellow
+        progressBar.style.setProperty('--progress-bar-color', color);
     }
-    else {
-        percentageCircle.classList.add('above-75');
+    if (progressTarget && barOuter) {
+        // Move target marker
+        const barWidth = barOuter.offsetWidth;
+        let targetLeft = (targetPercentage / 100) * barWidth;
+        // Clamp to bar edges
+        targetLeft = Math.max(7, Math.min(barWidth - 7, targetLeft));
+        progressTarget.style.left = `${targetLeft}px`;
+        progressTarget.setAttribute('data-tooltip', `Target: ${targetPercentage}%`);
+    }
+
+    // --- Streak logic only ---
+    // Calculate streak
+    let streak = 0;
+    const steps = [];
+    for (let i = 0; i < attended; i++) steps.push(true);
+    for (let i = 0; i < absent; i++) steps.push(false);
+    for (let i = steps.length - 1; i >= 0; i--) {
+        if (steps[i]) streak++;
+        else break;
+    }
+    const streakEl = document.getElementById('streak');
+    if (streakEl) {
+        streakEl.textContent = streak > 0 ? `🔥 Streak: ${streak}` : '';
     }
 
     // Update guidance message
@@ -104,43 +117,24 @@ function updateDisplay() {
     if (held === 0) {
         guidanceMessage = `Log your first class to see insights based on a ${targetPercentage}% target.`;
     } else if (percentage >= targetPercentage) {
-        // Calculate classes they can bunk while staying >= targetPercentage
-        // (Attended / (Held + b)) >= targetPercentageDecimal
-        // Attended >= targetPercentageDecimal * Held + targetPercentageDecimal * b
-        // Attended - targetPercentageDecimal * Held >= targetPercentageDecimal * b
-        // (Attended - targetPercentageDecimal * Held) / targetPercentageDecimal >= b
-        // (Attended / targetPercentageDecimal) - Held >= b
         const maxBunk = Math.floor((attended / targetPercentageDecimal) - held);
-
         if (maxBunk >= 1) {
             guidanceMessage = `You can bunk up to <strong>${maxBunk}</strong> more class${maxBunk > 1 ? 'es' : ''} and stay above ${targetPercentage}%. Keep it up!`;
         } else if (percentage === targetPercentage) {
              guidanceMessage = `You are exactly at ${targetPercentage}%. Be careful, any absence will drop you below!`;
         }
-        else { // Percentage is > target but maxBunk is 0 (meaning one absence drops below)
+        else {
              guidanceMessage = `You are currently above ${targetPercentage}%. Good! But be cautious, you might drop below with just one more absence.`;
         }
-
-    } else { // Percentage is below target
-        // Calculate classes needed to attend to reach >= targetPercentage
-        // (Attended + a) / (Held + a) >= targetPercentageDecimal
-        // Attended + a >= targetPercentageDecimal * Held + targetPercentageDecimal * a
-        // a - targetPercentageDecimal * a >= targetPercentageDecimal * Held - Attended
-        // a * (1 - targetPercentageDecimal) >= targetPercentageDecimal * Held - Attended
-        // a >= (targetPercentageDecimal * Held - Attended) / (1 - targetPercentageDecimal)
+    } else {
         const neededToAttend = Math.ceil((targetPercentageDecimal * held - attended) / (1 - targetPercentageDecimal));
-
         if (neededToAttend > 0) {
              guidanceMessage = `You need to attend at least <strong>${neededToAttend}</strong> more class${neededToAttend > 1 ? 'es' : ''} (without further absences) to reach ${targetPercentage}%. Focus!`;
         } else {
-             // This case implies you are already above or at the target, but the first IF failed.
-             // Should not happen if percentage < target is true, but as a fallback:
              guidanceMessage = `Current percentage is below ${targetPercentage}%. Attend more classes!`;
         }
     }
-
     guidanceMessageEl.innerHTML = guidanceMessage; // Use innerHTML for strong tag
-
     saveState(); // Save state after every update
 }
 
@@ -245,3 +239,125 @@ document.addEventListener('DOMContentLoaded', () => {
     loadState(); // Load data when the page loads
     updateDisplay(); // Update UI with loaded data
 });
+
+// --- UI/UX ENHANCEMENTS ---
+// Theme Toggle (devqa.io style)
+const themeToggle = document.getElementById('theme-toggle');
+const userThemePreference = localStorage.getItem('theme');
+if (userThemePreference === 'dark') {
+  document.body.classList.add('dark-theme');
+}
+if (themeToggle) {
+  themeToggle.addEventListener('click', () => {
+    document.body.classList.toggle('dark-theme');
+    const currentTheme = document.body.classList.contains('dark-theme') ? 'dark' : 'light';
+    localStorage.setItem('theme', currentTheme);
+  });
+}
+
+// Onboarding Modal
+const onboardingModal = document.getElementById('onboarding-modal');
+const helpBtn = document.getElementById('help-btn');
+const closeOnboarding = document.getElementById('close-onboarding');
+function showOnboarding() {
+    if (onboardingModal) onboardingModal.style.display = 'flex';
+}
+function hideOnboarding() {
+    if (onboardingModal) onboardingModal.style.display = 'none';
+}
+if (helpBtn) helpBtn.addEventListener('click', showOnboarding);
+if (closeOnboarding) closeOnboarding.addEventListener('click', hideOnboarding);
+// Show onboarding on first visit
+if (!localStorage.getItem('attendEaseOnboarded')) {
+    showOnboarding();
+    localStorage.setItem('attendEaseOnboarded', '1');
+}
+// Toast Notification System
+const toastContainer = document.getElementById('toast-container');
+function showToast(message, duration = 2500) {
+    if (!toastContainer) return;
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerHTML = message;
+    toastContainer.appendChild(toast);
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 400);
+    }, duration);
+}
+// Override showClickFeedback to use toast
+function showClickFeedback(message) {
+    showToast(message);
+}
+
+// --- PWA Install Prompt ---
+let deferredPrompt = null;
+const installBtn = document.getElementById('install-pwa-btn');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (installBtn) installBtn.style.display = 'block';
+});
+
+if (installBtn) {
+  // Hide by default if not available
+  installBtn.style.display = 'none';
+  installBtn.addEventListener('click', async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        showToast('App will be installed!');
+      } else {
+        showToast('Install dismissed.');
+      }
+      deferredPrompt = null;
+      installBtn.style.display = 'none';
+    } else {
+      showToast('App is already installed or not available for install.');
+    }
+  });
+}
+
+// --- Settings Modal Logic ---
+const settingsBtn = document.getElementById('settings-btn');
+const settingsModal = document.getElementById('settings-modal');
+const closeSettingsBtn = document.getElementById('close-settings');
+
+function openSettings() {
+  if (settingsModal) {
+    settingsModal.style.display = 'flex';
+    // Focus the first input for accessibility
+    const firstInput = settingsModal.querySelector('input, button');
+    if (firstInput) firstInput.focus();
+    document.body.style.overflow = 'hidden';
+  }
+}
+function closeSettings() {
+  if (settingsModal) {
+    settingsModal.style.display = 'none';
+    document.body.style.overflow = '';
+    if (settingsBtn) settingsBtn.focus();
+  }
+}
+if (settingsBtn) settingsBtn.addEventListener('click', openSettings);
+if (closeSettingsBtn) closeSettingsBtn.addEventListener('click', closeSettings);
+if (settingsModal) {
+  settingsModal.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeSettings();
+    // Trap focus inside modal
+    if (e.key === 'Tab') {
+      const focusable = settingsModal.querySelectorAll('input, button');
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  });
+}

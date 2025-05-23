@@ -1,102 +1,150 @@
+<!--
+  Design Reference & Tools:
+  - Color Palette: https://coolors.co/
+  - Gradients: https://cssgradient.io/
+  - Box Shadows: https://cssmash.com/box-shadow-generator
+  - Font Pairings: https://fonts.google.com/
+  - Icons: https://fontawesome.com/icons, https://css.gg/
+  - Accessibility: https://webaim.org/resources/contrastchecker/
+  - Focus Styles: https://www.smashingmagazine.com/focus-visible/
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#5a67d8">
     <title>AttendEASE - Your Personal Attendance Tracker</title>
+    <!-- Google Fonts: Inter, Orbitron, Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Orbitron:wght@400..900&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- CSS.gg for more icons -->
+    <link href="https://unpkg.com/css.gg@2.0.0/icons/css/calendar.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Orbitron:wght@400..900&display=swap" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
 </head>
 <body>
-
-    <header class="app-header">
-        <h1><span class="highlight">Attend</span>EASE</h1>
-        <p class="tagline">Effortless attendance tracking.</p>
-    </header>
-
-    <main class="app-container">
-
-        <section class="stats-section card">
-            <h2>Your Progress</h2>
-            <div class="percentage-display">
-                <div class="percentage-circle">
-                    <svg viewBox="0 0 36 36" class="circular-chart">
-                        <path class="circle-bg"
-                            d="M18 2.0845
-                               a 15.9155 15.9155 0 0 1 0 31.831
-                               a 15.9155 15.9155 0 0 1 0 -31.831"
-                        />
-                        <path class="circle"
-                            stroke-dasharray="0, 100"
-                            d="M18 2.0845
-                               a 15.9155 15.9155 0 0 1 0 31.831
-                               a 15.9155 15.9155 0 0 1 0 -31.831"
-                        />
-                    </svg>
-                    <span id="percentage" class="percentage-text">--%</span>
-                </div>
-                 <p class="percentage-label">Attendance Percentage</p>
+    <h1 class="visually-hidden">AttendEASE - Effortless Attendance Tracking</h1>
+    <!-- Navigation Bar -->
+    <nav class="navbar" aria-label="Main Navigation">
+        <div class="navbar-logo">
+            <img src="https://img.icons8.com/color/48/000000/calendar--v1.png" alt="AttendEASE Calendar Logo" class="logo-img" />
+            <span class="logo-text"><span class="highlight">Attend</span>EASE</span>
+        </div>
+        <div class="navbar-actions">
+            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
+                <img src="https://img.icons8.com/ios-glyphs/24/ffffff/moon-symbol.png" alt="Toggle dark mode" style="width: 1.5rem; height: 1.5rem;" />
+            </button>
+            <button id="help-btn" class="help-btn" aria-label="Help & Onboarding" data-tooltip="How to use AttendEASE">
+                <img src="https://img.icons8.com/ios-glyphs/24/ffffff/info.png" alt="Help & Onboarding" style="width: 1.5rem; height: 1.5rem;" />
+            </button>
+            <button id="settings-btn" class="settings-btn" aria-label="Settings">
+                <img src="https://img.icons8.com/ios-glyphs/24/ffffff/settings.png" alt="Settings" style="width: 1.5rem; height: 1.5rem;" />
+            </button>
+        </div>
+    </nav>
+    <!-- Main Content -->
+    <main class="app-container" style="margin-top: 2.5rem;">
+        <section class="stats-section card" aria-label="Attendance Progress">
+            <h2><span class="section-icon">📊</span> Your Progress</h2>
+            <div class="progress-header">
+                <span id="percentage" class="percentage-text" aria-live="polite">--%</span>
+                <span id="streak" class="streak-text" aria-live="polite"></span>
             </div>
-
+            <div class="progress-bar-outer" aria-label="Attendance Progress Bar">
+                <div class="progress-bar-inner" id="progress-bar-inner" style="width: 0%">
+                    <span class="progress-bar-label" id="progress-bar-label">0%</span>
+                </div>
+            </div>
+            <p class="percentage-label">Attendance Percentage</p>
             <div class="counts-display">
                 <div class="count-item">
-                    <span id="attended-count" class="count-number">0</span>
+                    <span id="attended-count" class="count-number" aria-label="Classes Attended">0</span>
                     <span class="count-label">Present</span>
                 </div>
                 <div class="count-item">
-                    <span id="absent-count" class="count-number">0</span>
+                    <span id="absent-count" class="count-number" aria-label="Classes Absent">0</span>
                     <span class="count-label">Absent</span>
                 </div>
-                 <div class="count-item">
-                    <span id="held-count" class="count-number">0</span>
+                <div class="count-item">
+                    <span id="held-count" class="count-number" aria-label="Total Classes Held">0</span>
                     <span class="count-label">Total Held</span>
                 </div>
             </div>
         </section>
-
-        <section class="controls-section card">
-            <h2>Log Class</h2>
+        <section class="controls-section card" aria-label="Log Class">
+            <h2><span class="section-icon">📝</span> Log Class</h2>
             <div class="button-grid">
-                 <button id="present-btn" class="action-button present-button">
-                    <span class="icon">✅</span> Present
-                 </button>
-                 <button id="absent-btn" class="action-button absent-button">
-                     <span class="icon">❌</span> Absent
-                 </button>
+                <button id="present-btn" class="action-button present-button" aria-label="Mark Present">
+                    <span role="img" aria-label="Present">✅</span> Present
+                </button>
+                <button id="absent-btn" class="action-button absent-button" aria-label="Mark Absent">
+                    <span role="img" aria-label="Absent">➖</span> Absent
+                </button>
             </div>
-             <p class="click-feedback" id="click-feedback"></p>
+            <p class="click-feedback" id="click-feedback" aria-live="polite"></p>
         </section>
-
-         <section class="guidance-section card">
-            <h2>Smart Insight</h2>
+        <section class="guidance-section card" aria-label="Smart Insight">
+            <h2><span class="section-icon">💡</span> Smart Insight</h2>
             <p id="guidance-message" class="guidance-text">
                 Log your first class to see insights!
             </p>
         </section>
-
-        <section class="settings-section card">
-            <h2>Settings</h2>
-            <div class="setting-item">
-                <label for="target-percentage">Target Percentage:</label>
-                <div class="input-with-unit">
-                    <input type="number" id="target-percentage" value="75" min="0" max="100" step="1">
-                    <span class="unit">%</span>
+        <!-- Settings Modal (hidden by default) -->
+        <div id="settings-modal" class="modal" aria-modal="true" role="dialog" aria-labelledby="settings-title" style="display:none;">
+            <div class="modal-content">
+                <h2 id="settings-title"><span class="section-icon">⚙️</span> Settings</h2>
+                <div class="setting-item">
+                    <label for="target-percentage">Target Percentage:</label>
+                    <div class="input-with-unit">
+                        <input type="number" id="target-percentage" value="75" min="0" max="100" step="1" aria-label="Target Attendance Percentage">
+                        <span class="unit">%</span>
+                    </div>
                 </div>
+                <button id="reset-btn" class="action-button reset-button" aria-label="Reset All Data">
+                    <span class="icon">🔄</span> Reset All Data
+                </button>
+                <button id="install-pwa-btn" class="action-button present-button" aria-label="Download App" style="margin-top:1rem;">
+                    <span class="icon">⬇️</span> Download App
+                </button>
+                <button id="close-settings" class="action-button" style="margin-top:1.5rem;">Close</button>
             </div>
-
-            <button id="reset-btn" class="action-button reset-button">
-                <span class="icon">🔄</span> Reset All Data
-            </button>
-        </section>
-
+        </div>
+        <!-- Hide original settings-section card -->
+        <section class="settings-section card" aria-label="Settings" style="display:none;"></section>
     </main>
-
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+    <!-- Onboarding Modal -->
+    <div id="onboarding-modal" class="modal" aria-modal="true" role="dialog" aria-labelledby="onboarding-title" style="display:none;">
+        <div class="modal-content">
+            <h2 id="onboarding-title">Welcome to AttendEASE 🎉</h2>
+            <ul class="onboarding-list">
+                <li>Track your attendance with a single click.</li>
+                <li>Set your target percentage and get smart insights.</li>
+                <li>Switch between light and dark mode for comfort.</li>
+                <li>Export your data (coming soon!).</li>
+            </ul>
+            <button id="close-onboarding" class="action-button present-button">Get Started</button>
+        </div>
+    </div>
     <footer class="app-footer">
-        <p>© 2023 AttendEASE (Crafted by a Top Developer)</p>
+        <div class="footer-content">
+            <p>© 2023 AttendEASE (Crafted by a Top Developer)</p>
+            <div class="footer-links">
+                <a href="https://github.com/yeshwanthvshenoy/attend-ease" target="_blank" rel="noopener" aria-label="GitHub Repository">⭐ Star on GitHub</a>
+                <a href="mailto:support@attendease.com" aria-label="Contact Support">Contact</a>
+            </div>
+        </div>
     </footer>
-
     <script src="script.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('service-worker.js');
+        });
+      }
+    </script>
 </body>
 </html>
