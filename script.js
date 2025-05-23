@@ -362,19 +362,25 @@ if (!localStorage.getItem('attendEaseOnboarded')) {
 }
 // Toast Notification System
 const toastContainer = document.getElementById('toast-container');
+let toastTimeoutId = null;
 function showToast(message, duration = 2500) {
     if (!toastContainer) return;
     // Remove any existing toasts before showing a new one
     while (toastContainer.firstChild) {
         toastContainer.removeChild(toastContainer.firstChild);
     }
+    if (toastTimeoutId) {
+        clearTimeout(toastTimeoutId);
+        toastTimeoutId = null;
+    }
     const toast = document.createElement('div');
     toast.className = 'toast';
     toast.innerHTML = message;
     toastContainer.appendChild(toast);
-    setTimeout(() => {
+    toastTimeoutId = setTimeout(() => {
         toast.style.opacity = '0';
         setTimeout(() => toast.remove(), 400);
+        toastTimeoutId = null;
     }, duration);
 }
 // Override showClickFeedback to use toast
