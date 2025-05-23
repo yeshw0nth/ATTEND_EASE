@@ -238,6 +238,115 @@ targetPercentageInput.addEventListener('input', (event) => {
 document.addEventListener('DOMContentLoaded', () => {
     loadState(); // Load data when the page loads
     updateDisplay(); // Update UI with loaded data
+
+    // --- Mobile Action Bar Logic (DOM Ready) ---
+    const mobilePresentBtn = document.getElementById('mobile-present-btn');
+    const mobileAbsentBtn = document.getElementById('mobile-absent-btn');
+    const miniProgressText = document.getElementById('mini-progress-text');
+    const miniProgressBar = document.querySelector('.mini-progress-bar');
+    let lastAction = null; // For undo
+    let undoTimeout = null;
+    let actionLock = false; // Prevent rapid double-tap
+
+    function vibrate(ms = 30) {
+        if (window.navigator && window.navigator.vibrate) {
+            window.navigator.vibrate(ms);
+        }
+    }
+
+    function highlightMiniProgress() {
+        if (!miniProgressBar) return;
+        miniProgressBar.classList.add('highlight-mini');
+        setTimeout(() => miniProgressBar.classList.remove('highlight-mini'), 350);
+    }
+
+    function showUndoToast(type) {
+        // type: 'present' or 'absent'
+        const undoMsg = type === 'present' ? '✅ Marked Present!' : '❌ Marked Absent!';
+        showToast(
+            `${undoMsg} <button class="undo-btn" id="undo-btn" aria-label="Undo last action">Undo</button>`,
+            3500
+        );
+        // Attach undo handler
+        setTimeout(() => {
+            const undoBtn = document.getElementById('undo-btn');
+            if (undoBtn) {
+                undoBtn.onclick = () => {
+                    if (lastAction === 'present' && attended > 0) attended--;
+                    if (lastAction === 'absent' && absent > 0) absent--;
+                    updateDisplay();
+                    syncMiniProgress();
+                    showToast('⏪ Action undone!', 1500);
+                    vibrate(15);
+                    lastAction = null;
+                };
+            }
+        }, 100);
+    }
+
+    function updateMiniProgress(percentage) {
+        if (!miniProgressText || !miniProgressBar) return;
+        const pct = isNaN(percentage) ? 0 : Math.max(0, Math.min(100, percentage));
+        miniProgressText.textContent = `${pct.toFixed(1)}%`;
+        // Animate the circle (SVG stroke)
+        const dash = 100;
+        const offset = dash - (dash * pct) / 100;
+        miniProgressBar.setAttribute('stroke-dasharray', dash);
+        miniProgressBar.setAttribute('stroke-dashoffset', offset);
+        // Color logic (match main bar)
+        let color = '#48bb78';
+        if (pct < 60) color = '#f56565';
+        else if (pct < 75) color = '#f6e05e';
+        miniProgressBar.style.stroke = color;
+        highlightMiniProgress();
+    }
+
+    function syncMiniProgress() {
+        const held = attended + absent;
+        const percentage = held === 0 ? 0 : (attended / held) * 100;
+        updateMiniProgress(percentage);
+    }
+
+    function handleMobileAction(type) {
+        if (actionLock) return;
+        actionLock = true;
+        setTimeout(() => { actionLock = false; }, 500); // Prevent rapid double-tap
+        if (type === 'present') {
+            attended++;
+            lastAction = 'present';
+        } else if (type === 'absent') {
+            absent++;
+            lastAction = 'absent';
+        }
+        updateDisplay();
+        syncMiniProgress();
+        addButtonAnimation(type === 'present' ? mobilePresentBtn : mobileAbsentBtn);
+        vibrate(30);
+        showUndoToast(type);
+    }
+
+    if (mobilePresentBtn && mobileAbsentBtn) {
+        mobilePresentBtn.addEventListener('click', () => handleMobileAction('present'));
+        mobileAbsentBtn.addEventListener('click', () => handleMobileAction('absent'));
+    }
+
+    // Sync mini progress on every display update
+    const origUpdateDisplay = updateDisplay;
+    updateDisplay = function() {
+        origUpdateDisplay.apply(this, arguments);
+        syncMiniProgress();
+    };
+    // Initial sync
+    syncMiniProgress();
+
+    // Add highlight style for mini progress
+    const style = document.createElement('style');
+    style.innerHTML = `
+      .highlight-mini { filter: drop-shadow(0 0 6px #f6e05e99) brightness(1.15); }
+      .undo-btn { background: none; border: none; color: #5a67d8; font-weight: 700; font-size: 1em; margin-left: 0.7em; cursor: pointer; text-decoration: underline; border-radius: 4px; padding: 0 0.3em; }
+      .undo-btn:active { color: #f56565; }
+    `;
+    document.head.appendChild(style);
 });
 
 // --- UI/UX ENHANCEMENTS ---
@@ -361,57 +470,3 @@ if (settingsModal) {
     }
   });
 }
-
-// --- Mobile Action Bar Logic ---
-const mobilePresentBtn = document.getElementById('mobile-present-btn');
-const mobileAbsentBtn = document.getElementById('mobile-absent-btn');
-const miniProgressText = document.getElementById('mini-progress-text');
-const miniProgressBar = document.querySelector('.mini-progress-bar');
-
-function updateMiniProgress(percentage) {
-    if (!miniProgressText || !miniProgressBar) return;
-    const pct = isNaN(percentage) ? 0 : Math.max(0, Math.min(100, percentage));
-    miniProgressText.textContent = `${pct.toFixed(1)}%`;
-    // Animate the circle (SVG stroke)
-    const dash = 100;
-    const offset = dash - (dash * pct) / 100;
-    miniProgressBar.setAttribute('stroke-dasharray', dash);
-    miniProgressBar.setAttribute('stroke-dashoffset', offset);
-    // Color logic (match main bar)
-    let color = '#48bb78';
-    if (pct < 60) color = '#f56565';
-    else if (pct < 75) color = '#f6e05e';
-    miniProgressBar.style.stroke = color;
-}
-
-function syncMiniProgress() {
-    const held = attended + absent;
-    const percentage = held === 0 ? 0 : (attended / held) * 100;
-    updateMiniProgress(percentage);
-}
-
-if (mobilePresentBtn && mobileAbsentBtn) {
-    mobilePresentBtn.addEventListener('click', () => {
-        attended++;
-        updateDisplay();
-        syncMiniProgress();
-        addButtonAnimation(mobilePresentBtn);
-        showClickFeedback('✅ Marked Present!');
-    });
-    mobileAbsentBtn.addEventListener('click', () => {
-        absent++;
-        updateDisplay();
-        syncMiniProgress();
-        addButtonAnimation(mobileAbsentBtn);
-        showClickFeedback('❌ Marked Absent!');
-    });
-}
-
-// Sync mini progress on every display update
-const origUpdateDisplay = updateDisplay;
-updateDisplay = function() {
-    origUpdateDisplay.apply(this, arguments);
-    syncMiniProgress();
-};
-// Initial sync
-syncMiniProgress();
